@@ -24,21 +24,15 @@ class Board:
         self.info_rect = pg.Rect(0, 0, constants.window_width, window_part * constants.window_height)
         self.game_rect = pg.Rect(0, self.info_rect.height,
                                  constants.window_width, constants.window_height - self.info_rect.height)
-        board_size = 600
-        board_x = self.game_rect.width / 2 - board_size / 2
-        board_y = self.game_rect.height / 2 - board_size / 2
+        # gap between small parts of board
+        self.gap = 10
+        self.board_size = 600
+        board_x = self.game_rect.width / 2 - self.board_size / 2
+        board_y = self.game_rect.height / 2 - self.board_size / 2
         self.board_rect = pg.Rect(board_x + self.game_rect.x,
                                   board_y + self.game_rect.y,
-                                  board_size, board_size)
-        self.board_fields = []
-        field_size = board_size / 9
-        for row in range(self.size):
-            row_fields = []
-            for column in range(self.size):
-                row_fields.append(pg.Rect(column * field_size + self.board_rect.x,
-                                          row * field_size + self.board_rect.y,
-                                          field_size, field_size))
-            self.board_fields.append(row_fields)
+                                  self.board_size, self.board_size)
+        self.board_fields = self.create_rectangles_for_fields()
 
     def show(self):
         pg.draw.rect(self.window, (255, 255, 255), self.info_rect)
@@ -63,7 +57,7 @@ class Board:
                 text_width = text.get_width()
                 text_height = text.get_height()
                 text_x = field.width / 2 - text_width / 2 + field.x
-                text_y = field.height / 2 - text_height/2 + field.y
+                text_y = field.height / 2 - text_height / 2 + field.y
 
                 self.window.blit(text, (text_x, text_y, text_width, text_height))
         pg.display.update()
@@ -95,3 +89,23 @@ class Board:
                 if self.board[row][column] != 0:
                     indices.append((row, column))
         return indices
+
+    def create_rectangles_for_fields(self):
+        board_fields = []
+        gap_y = 0
+        field_size = (self.board_size - 2 * self.gap) / 9
+        for row in range(self.size):
+            gap_x = 0
+            # gap is added every third row
+            if row % 3 == 0 and row != 0:
+                gap_y += self.gap
+            row_fields = []
+            for column in range(self.size):
+                # gap is added every third column
+                if column % 3 == 0 and column != 0:
+                    gap_x += self.gap
+                row_fields.append(pg.Rect(column * field_size + gap_x + self.board_rect.x,
+                                          row * field_size + gap_y + self.board_rect.y,
+                                          field_size, field_size))
+            board_fields.append(row_fields)
+        return board_fields
