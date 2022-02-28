@@ -7,7 +7,9 @@ import constants
 class Board:
     def __init__(self, window):
         self.size = 9
-        self.board = [
+
+        # stores all the values from board
+        self.board_values = [
             [0, 4, 0, 0, 0, 0, 6, 8, 5],
             [6, 0, 2, 0, 9, 8, 0, 0, 0],
             [0, 5, 0, 7, 6, 4, 0, 1, 0],
@@ -18,14 +20,17 @@ class Board:
             [4, 0, 0, 0, 7, 1, 0, 0, 6],
             [9, 8, 0, 0, 5, 0, 4, 0, 0]
         ]
-        self.original_fields = self.get_original_indices()
+
+        # pygame window
         self.window = window
+        # fraction of window intended for logo etc
         window_part = 0.3
+        # rect containing logo etc
         self.info_rect = pg.Rect(0, 0, constants.window_width, window_part * constants.window_height)
         self.game_rect = pg.Rect(0, self.info_rect.height,
                                  constants.window_width, constants.window_height - self.info_rect.height)
         # gap between small parts of board
-        self.gap = 10
+        self.gap = 8
         self.board_size = 600
         board_x = self.game_rect.width / 2 - self.board_size / 2
         board_y = self.game_rect.height / 2 - self.board_size / 2
@@ -34,7 +39,10 @@ class Board:
                                   self.board_size, self.board_size)
         self.board_fields = self.create_rectangles_for_fields()
 
-    def show(self):
+        # stores the indices of starting fields
+        self.original_fields = self.create_original_fields()
+
+    def show(self, clicked_field):
         pg.draw.rect(self.window, (255, 255, 255), self.info_rect)
         pg.draw.rect(self.window, (255, 0, 255), self.game_rect)
         pg.draw.rect(self.window, (0, 255, 255), self.board_rect)
@@ -44,12 +52,14 @@ class Board:
 
         for row_counter, row_fields in enumerate(self.board_fields):
             for column_counter, field in enumerate(row_fields):
-                if (row_counter, column_counter) in self.original_fields:
+                if field in self.original_fields:
                     color = (128, 128, 128)
+                elif clicked_field and clicked_field == field:
+                    color = (135, 206, 250)
                 else:
                     color = (192, 222, 60)
                 pg.draw.rect(self.window, color, field)
-                text = str(self.board[row_counter][column_counter])
+                text = str(self.board_values[row_counter][column_counter])
                 if text == "0":
                     text = " "
                 text = font.render(text, True, font_color)
@@ -75,20 +85,20 @@ class Board:
             for column in range(self.size):
                 if column % 3 == 0 and column != 0:
                     row_text += " | "
-                number = self.board[row][column]
+                number = self.board_values[row][column]
                 if number:
                     row_text += " " + str(number) + " "
                 else:
                     row_text += "   "
             print(row_text)
 
-    def get_original_indices(self):
-        indices = []
+    def create_original_fields(self):
+        fields = []
         for row in range(self.size):
             for column in range(self.size):
-                if self.board[row][column] != 0:
-                    indices.append((row, column))
-        return indices
+                if self.board_values[row][column] != 0:
+                    fields.append(self.board_fields[row][column])
+        return fields
 
     def create_rectangles_for_fields(self):
         board_fields = []
@@ -109,3 +119,25 @@ class Board:
                                           field_size, field_size))
             board_fields.append(row_fields)
         return board_fields
+
+    def get_board_fields(self):
+        return self.board_fields
+
+    def get_original_fields(self):
+        return self.original_fields
+
+    def get_board_rect(self):
+        return self.board_rect
+
+    def find_field_value(self, field):
+        for row in range(self.size):
+            for column in range(self.size):
+                if field == self.board_fields[row][column]:
+                    return self.board_values[row][column]
+
+    def insert_field_value(self, field, value):
+        for row in range(self.size):
+            for column in range(self.size):
+                if field == self.board_fields[row][column]:
+                    self.board_values[row][column] = value
+                    return
