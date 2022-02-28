@@ -8,18 +8,10 @@ class Board:
     def __init__(self, window):
         self.size = 9
 
-        # stores all the values from board
-        self.board_values = [
-            [0, 4, 0, 0, 0, 0, 6, 8, 5],
-            [6, 0, 2, 0, 9, 8, 0, 0, 0],
-            [0, 5, 0, 7, 6, 4, 0, 1, 0],
-            [0, 9, 0, 0, 0, 7, 0, 6, 8],
-            [0, 6, 7, 9, 0, 5, 0, 4, 2],
-            [5, 2, 4, 6, 0, 3, 0, 0, 7],
-            [0, 0, 0, 0, 0, 9, 0, 0, 0],
-            [4, 0, 0, 0, 7, 1, 0, 0, 6],
-            [9, 8, 0, 0, 5, 0, 4, 0, 0]
-        ]
+        self.board_values = []
+
+        # read board values from file
+        self.read_board_values_from_file("boards/board1.txt")
 
         # pygame window
         self.window = window
@@ -141,3 +133,14 @@ class Board:
                 if field == self.board_fields[row][column]:
                     self.board_values[row][column] = value
                     return
+
+    def read_board_values_from_file(self, file_path):
+        self.board_values = []
+        file = open(file_path, "r")
+        for row in range(self.size):
+            one_row = []
+            values_string = file.readline()
+            for column in range(self.size):
+                one_row.append(int(values_string[column]))
+            self.board_values.append(one_row)
+
