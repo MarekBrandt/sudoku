@@ -32,6 +32,7 @@ class Game:
                 # user clicked beside board, stop focus
                 if not self.game_board.get_board_rect().collidepoint(pos):
                     active_field = None
+                # user clicked on one of fields
                 else:
                     for rect_row in self.rectangles:
                         for rect in rect_row:
@@ -62,6 +63,8 @@ class Game:
                             # for numbers pg.key.name returns for instance [4], value takes only number
                             value = int(pg.key.name(event.key)[1])
                             self.game_board.insert_field_value(active_field, value)
+                        # after changing a value
+                        print(self.game_board.check_and_set_correct())
 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     click = True

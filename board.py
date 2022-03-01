@@ -10,8 +10,13 @@ class Board:
 
         self.board_values = []
 
-        # read board values from file
+        # initialize board from file
+        # method sets board_values
         self.read_board_values_from_file("boards/board1.txt")
+
+        self.board_correct = True
+        # checks validity of board and sets board_correct parameters
+        self.check_and_set_correct()
 
         # pygame window
         self.window = window
@@ -143,4 +148,28 @@ class Board:
             for column in range(self.size):
                 one_row.append(int(values_string[column]))
             self.board_values.append(one_row)
+
+    # checks if values on board are correct and sets board_correct
+    def check_and_set_correct(self):
+        correctness = self.rule1()
+        self.board_correct = correctness
+        return correctness
+
+    # Rule 1 - Each row must contain the numbers from 1 to 9, without repetitions
+    def rule1(self):
+        for row in range(self.size):
+            row_values = []
+            for column in range(self.size):
+                value = self.board_values[row][column]
+                # making sure that 0 values won't get to row_values
+                if not value:
+                    continue
+                # repetition of value
+                if value in row_values:
+                    return False
+                row_values.append(value)
+        return True
+
+    def get_board_correct(self):
+        return self.board_correct
 
