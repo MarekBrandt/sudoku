@@ -7,6 +7,7 @@ import constants
 class Board:
     def __init__(self, window):
         self.size = 9
+        self.block_size = 3
 
         self.board_values = []
 
@@ -151,7 +152,7 @@ class Board:
 
     # checks if values on board are correct and sets board_correct
     def check_and_set_correct(self):
-        correctness = self.rule1()
+        correctness = self.rule1() and self.rule2() and self.rule3()
         self.board_correct = correctness
         return correctness
 
@@ -168,6 +169,43 @@ class Board:
                 if value in row_values:
                     return False
                 row_values.append(value)
+        return True
+
+    # Rule 2 - Each column must contain the numbers from 1 to 9, without repetitions
+    def rule2(self):
+        for column in range(self.size):
+            column_values = []
+            for row in range(self.size):
+                value = self.board_values[row][column]
+                # making sure that 0 values won't get to row_values
+                if not value:
+                    continue
+                # repetition of value
+                if value in column_values:
+                    return False
+                column_values.append(value)
+        return True
+
+    # Rule 3 - The digits can only occur once per block (nonet)
+    def rule3(self):
+        # int(self.size / self.block_size) gives the number of blocks (nonets)
+        no_of_blocks = int(self.size / self.block_size)
+        # will be checking every block and every field in block
+        for block_row in range(no_of_blocks):
+            for block_column in range(no_of_blocks):
+                block_values = []
+                for row in range(self.block_size):
+                    for column in range(self.block_size):
+                        row_index = block_row * self.block_size + row
+                        column_index = block_column * self.block_size + column
+
+                        value = self.board_values[row_index][column_index]
+                        # value == 0
+                        if not value:
+                            continue
+                        if value in block_values:
+                            return False
+                        block_values.append(value)
         return True
 
     def get_board_correct(self):

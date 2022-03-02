@@ -61,7 +61,13 @@ class Game:
                         elif event.key == pg.K_1 or pg.K_2 or pg.K_3 or pg.K_4 or pg.K_5 or pg.K_6 \
                                 or pg.K_7 or pg.K_8 or pg.K_9 or pg.K_0:
                             # for numbers pg.key.name returns for instance [4], value takes only number
-                            value = int(pg.key.name(event.key)[1])
+                            value = pg.key.name(event.key)
+                            # if numeric keypad
+                            if '[' in value:
+                                value = int(value[1])
+                            else:
+                                value = int(value)
+
                             self.game_board.insert_field_value(active_field, value)
                         # after changing a value
                         print(self.game_board.check_and_set_correct())
