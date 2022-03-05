@@ -5,6 +5,7 @@ import pygame as pg
 import constants
 
 
+# represents all actions made in game
 class Game:
     def __init__(self):
         self.window = pg.display.set_mode((constants.window_width, constants.window_height))
@@ -15,8 +16,7 @@ class Game:
         pg.init()
 
         self.game_board = Board(self.window)
-        self.rectangles = self.game_board.get_board_fields()
-        self.original_fields = self.game_board.get_original_fields()
+        self.fields = self.game_board.get_board_fields()
         self.fps = 60
 
     def start(self):
@@ -35,14 +35,15 @@ class Game:
                     modifiable_field = None
                 # user clicked on one of fields
                 else:
-                    for rect_row in self.rectangles:
-                        for rect in rect_row:
+                    for fields_row in self.fields:
+                        for field in fields_row:
+                            rect = field.get_rect()
                             if rect.collidepoint(pos):
-                                active_field = rect
-                                if rect not in self.original_fields:
-                                    modifiable_field = rect
-                                else:
+                                active_field = field
+                                if field.get_is_original():
                                     modifiable_field = None
+                                else:
+                                    modifiable_field = field
                                 break
             click = False
             for event in pg.event.get():
@@ -68,22 +69,24 @@ class Game:
                             active_field = self.game_board.find_field_beside(active_field, "right")
 
                         # active field is now changed or remain the same
-                        if active_field in self.original_fields:
+                        if active_field.get_is_original():
                             modifiable_field = None
                         else:
                             modifiable_field = active_field
 
-                        if event.key == pg.K_BACKSPACE:
-                            # value 0 is invisible on board
-                            self.game_board.insert_field_value(modifiable_field, 0)
-                        if event.unicode.isdigit():
-                            value = int(event.unicode)
-                            print(value)
-                            self.game_board.insert_field_value(modifiable_field, value)
+                        if modifiable_field:
+                            if event.key == pg.K_BACKSPACE:
+                                # value 0 is invisible on board
+                                modifiable_field.set_value(0)
+                            if event.unicode.isdigit():
+                                value = int(event.unicode)
+                                print(value)
+                                modifiable_field.set_value(value)
 
-                        # after move
-                        if self.game_board.is_board_full():
-                            print(self.game_board.check_and_set_correct())
+                            # after move
+                            print("correctness: " + str(self.game_board.check_and_set_correct()))
+                            if self.game_board.is_board_full():
+                                print(self.game_board.check_and_set_correct())
 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     click = True

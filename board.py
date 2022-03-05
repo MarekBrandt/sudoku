@@ -1,19 +1,19 @@
-import random
-
 import pygame as pg
 import constants
+from field import Field
 
 
+# represents all what is seen in window
 class Board:
     def __init__(self, window):
         self.size = 9
         self.block_size = 3
-        
-        self.board_values = []
+
+        self.fields = []
 
         # initialize board from file
         # method sets board_values
-        self.read_board_values_from_file("boards/board1.txt")
+        self.read_field_values_from_file("boards/board1.txt")
 
         self.board_correct = True
         # checks validity of board and sets board_correct parameters
@@ -35,10 +35,8 @@ class Board:
         self.board_rect = pg.Rect(board_x + self.game_rect.x,
                                   board_y + self.game_rect.y,
                                   self.board_size, self.board_size)
-        self.board_fields = self.create_rectangles_for_fields()
 
-        # stores the indices of starting fields
-        self.original_fields = self.create_original_fields()
+        self.create_and_set_rectangles_for_fields()
 
     def show(self, active_field, modifiable_field):
         pg.draw.rect(self.window, (255, 255, 255), self.info_rect)
@@ -48,27 +46,29 @@ class Board:
         font = pg.font.Font(None, 50)
         font_color = (0, 0, 0)
 
-        for row_counter, row_fields in enumerate(self.board_fields):
-            for column_counter, field in enumerate(row_fields):
-                if field in self.original_fields:
+        for row_fields in self.fields:
+            for field in row_fields:
+                if field.is_original:
                     color = (128, 128, 128)
                 elif modifiable_field == field:
                     color = (135, 206, 250)
                 else:
                     color = (192, 222, 60)
                 pg.draw.rect(self.window, color, field)
-                text = str(self.board_values[row_counter][column_counter])
+                text = str(field.get_value())
                 if text == "0":
                     text = " "
                 text = font.render(text, True, font_color)
 
+                rectangle = field.get_rect()
+
                 text_width = text.get_width()
                 text_height = text.get_height()
-                text_x = field.width / 2 - text_width / 2 + field.x
-                text_y = field.height / 2 - text_height / 2 + field.y
+                text_x = rectangle.width / 2 - text_width / 2 + rectangle.x
+                text_y = rectangle.height / 2 - text_height / 2 + rectangle.y
 
                 if active_field == field:
-                    pg.draw.rect(self.window, (100, 100, 100), field, 3)
+                    pg.draw.rect(self.window, (100, 100, 100), rectangle, 4)
 
                 self.window.blit(text, (text_x, text_y, text_width, text_height))
         pg.display.update()
@@ -86,23 +86,14 @@ class Board:
             for column in range(self.size):
                 if column % 3 == 0 and column != 0:
                     row_text += " | "
-                number = self.board_values[row][column]
+                number = self.fields[row][column].get_value()
                 if number:
                     row_text += " " + str(number) + " "
                 else:
                     row_text += "   "
             print(row_text)
 
-    def create_original_fields(self):
-        fields = []
-        for row in range(self.size):
-            for column in range(self.size):
-                if self.board_values[row][column] != 0:
-                    fields.append(self.board_fields[row][column])
-        return fields
-
-    def create_rectangles_for_fields(self):
-        board_fields = []
+    def create_and_set_rectangles_for_fields(self):
         gap_y = 0
         field_size = (self.board_size - 2 * self.gap) / 9
         for row in range(self.size):
@@ -110,48 +101,36 @@ class Board:
             # gap is added every third row
             if row % 3 == 0 and row != 0:
                 gap_y += self.gap
-            row_fields = []
             for column in range(self.size):
                 # gap is added every third column
                 if column % 3 == 0 and column != 0:
                     gap_x += self.gap
-                row_fields.append(pg.Rect(column * field_size + gap_x + self.board_rect.x,
-                                          row * field_size + gap_y + self.board_rect.y,
-                                          field_size, field_size))
-            board_fields.append(row_fields)
-        return board_fields
+
+                self.fields[row][column].set_rect(pg.Rect(column * field_size + gap_x + self.board_rect.x,
+                                                          row * field_size + gap_y + self.board_rect.y,
+                                                          field_size, field_size))
 
     def get_board_fields(self):
-        return self.board_fields
-
-    def get_original_fields(self):
-        return self.original_fields
+        return self.fields
 
     def get_board_rect(self):
         return self.board_rect
 
-    def find_field_value(self, field):
-        for row in range(self.size):
-            for column in range(self.size):
-                if field == self.board_fields[row][column]:
-                    return self.board_values[row][column]
-
-    def insert_field_value(self, field, value):
-        for row in range(self.size):
-            for column in range(self.size):
-                if field == self.board_fields[row][column]:
-                    self.board_values[row][column] = value
-                    return
-
-    def read_board_values_from_file(self, file_path):
-        self.board_values = []
+    def read_field_values_from_file(self, file_path):
+        self.fields = []
         file = open(file_path, "r")
         for row in range(self.size):
-            one_row = []
+            fields_row = []
             values_string = file.readline()
             for column in range(self.size):
-                one_row.append(int(values_string[column]))
-            self.board_values.append(one_row)
+                value = int(values_string[column])
+                # if value is different than 0, then it is original field
+                if value:
+                    is_original = True
+                else:
+                    is_original = False
+                fields_row.append(Field(value, is_original))
+            self.fields.append(fields_row)
 
     # checks if values on board are correct and sets board_correct
     def check_and_set_correct(self):
@@ -164,14 +143,16 @@ class Board:
         for row in range(self.size):
             row_values = []
             for column in range(self.size):
-                value = self.board_values[row][column]
+                value = self.fields[row][column].get_value()
                 # making sure that 0 values won't get to row_values
                 if not value:
                     continue
                 # repetition of value
                 if value in row_values:
+                    print("Rule 1 false")
                     return False
                 row_values.append(value)
+        print("Rule 1 true")
         return True
 
     # Rule 2 - Each column must contain the numbers from 1 to 9, without repetitions
@@ -179,14 +160,16 @@ class Board:
         for column in range(self.size):
             column_values = []
             for row in range(self.size):
-                value = self.board_values[row][column]
+                value = self.fields[row][column].get_value()
                 # making sure that 0 values won't get to row_values
                 if not value:
                     continue
                 # repetition of value
                 if value in column_values:
+                    print("Rule 2 false")
                     return False
                 column_values.append(value)
+        print("Rule 2 true")
         return True
 
     # Rule 3 - The digits can only occur once per block (nonet)
@@ -202,28 +185,31 @@ class Board:
                         row_index = block_row * self.block_size + row
                         column_index = block_column * self.block_size + column
 
-                        value = self.board_values[row_index][column_index]
+                        value = self.fields[row_index][column_index].get_value()
                         # value == 0
                         if not value:
                             continue
                         if value in block_values:
+                            print("Rule 3 false")
                             return False
                         block_values.append(value)
+        print("Rule 3 true")
         return True
 
     def get_board_correct(self):
         return self.board_correct
 
     def is_board_full(self):
-        for row in range(self.size):
-            if 0 in self.board_values[row]:
-                return False
+        for fields_row in self.fields:
+            for field in fields_row:
+                if field.get_value() == 0:
+                    return False
         return True
 
     def get_field_coordinates(self, field):
         for row in range(self.size):
             for column in range(self.size):
-                if field == self.board_fields[row][column]:
+                if field == self.fields[row][column]:
                     return row, column
         return None
 
@@ -233,23 +219,21 @@ class Board:
             if direction == "up":
                 # if it is not the upper border
                 if row != 0:
-                    field = self.board_fields[row-1][column]
+                    field = self.fields[row - 1][column]
             if direction == "down":
                 # if it is not the lower border
-                if row != self.size-1:
-                    field = self.board_fields[row+1][column]
+                if row != self.size - 1:
+                    field = self.fields[row + 1][column]
             if direction == "left":
                 # if it is not the left border
                 if column != 0:
-                    field = self.board_fields[row][column-1]
+                    field = self.fields[row][column - 1]
             if direction == "right":
                 # if it is not the right border
-                if column != self.size-1:
-                    field = self.board_fields[row][column+1]
+                if column != self.size - 1:
+                    field = self.fields[row][column + 1]
             return field
 
         else:
             print("direction have to be a value from constants.DIRECTION")
             return 1
-
-
