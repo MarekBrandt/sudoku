@@ -8,7 +8,7 @@ class Board:
     def __init__(self, window):
         self.size = 9
         self.block_size = 3
-
+        
         self.board_values = []
 
         # initialize board from file
