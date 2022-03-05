@@ -40,7 +40,7 @@ class Board:
         # stores the indices of starting fields
         self.original_fields = self.create_original_fields()
 
-    def show(self, clicked_field):
+    def show(self, active_field, modifiable_field):
         pg.draw.rect(self.window, (255, 255, 255), self.info_rect)
         pg.draw.rect(self.window, (255, 0, 255), self.game_rect)
         pg.draw.rect(self.window, (0, 255, 255), self.board_rect)
@@ -52,7 +52,7 @@ class Board:
             for column_counter, field in enumerate(row_fields):
                 if field in self.original_fields:
                     color = (128, 128, 128)
-                elif clicked_field and clicked_field == field:
+                elif modifiable_field == field:
                     color = (135, 206, 250)
                 else:
                     color = (192, 222, 60)
@@ -66,6 +66,9 @@ class Board:
                 text_height = text.get_height()
                 text_x = field.width / 2 - text_width / 2 + field.x
                 text_y = field.height / 2 - text_height / 2 + field.y
+
+                if active_field == field:
+                    pg.draw.rect(self.window, (100, 100, 100), field, 3)
 
                 self.window.blit(text, (text_x, text_y, text_width, text_height))
         pg.display.update()
@@ -210,4 +213,43 @@ class Board:
 
     def get_board_correct(self):
         return self.board_correct
+
+    def is_board_full(self):
+        for row in range(self.size):
+            if 0 in self.board_values[row]:
+                return False
+        return True
+
+    def get_field_coordinates(self, field):
+        for row in range(self.size):
+            for column in range(self.size):
+                if field == self.board_fields[row][column]:
+                    return row, column
+        return None
+
+    def find_field_beside(self, field, direction):
+        if direction in constants.DIRECTIONS:
+            row, column = self.get_field_coordinates(field)
+            if direction == "up":
+                # if it is not the upper border
+                if row != 0:
+                    field = self.board_fields[row-1][column]
+            if direction == "down":
+                # if it is not the lower border
+                if row != self.size-1:
+                    field = self.board_fields[row+1][column]
+            if direction == "left":
+                # if it is not the left border
+                if column != 0:
+                    field = self.board_fields[row][column-1]
+            if direction == "right":
+                # if it is not the right border
+                if column != self.size-1:
+                    field = self.board_fields[row][column+1]
+            return field
+
+        else:
+            print("direction have to be a value from constants.DIRECTION")
+            return 1
+
 
