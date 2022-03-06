@@ -2,8 +2,10 @@ import pygame as pg
 import constants
 from field import Field
 
-
 # represents all what is seen in window
+from menu import Menu
+
+
 class Board:
     def __init__(self, window):
         self.size = 9
@@ -13,7 +15,7 @@ class Board:
 
         # initialize board from file
         # method sets board_values
-        self.read_field_values_from_file("boards/board1.txt")
+        self.read_field_values_from_file("boards/board2.txt")
 
         self.board_correct = True
         # checks validity of board and sets board_correct parameters
@@ -23,10 +25,14 @@ class Board:
         self.window = window
         # fraction of window intended for logo etc
         window_part = 0.3
+
         # rect containing logo etc
-        self.info_rect = pg.Rect(0, 0, constants.window_width, window_part * constants.window_height)
-        self.game_rect = pg.Rect(0, self.info_rect.height,
-                                 constants.window_width, constants.window_height - self.info_rect.height)
+        info_rect = pg.Rect(0, 0, constants.window_width, window_part * constants.window_height)
+
+        self.menu = Menu(info_rect, self.window)
+
+        self.game_rect = pg.Rect(0, info_rect.height,
+                                 constants.window_width, constants.window_height - info_rect.height)
         # gap between small parts of board
         self.gap = 8
         self.board_size = 600
@@ -39,7 +45,7 @@ class Board:
         self.create_and_set_rectangles_for_fields()
 
     def show(self, active_field, modifiable_field):
-        pg.draw.rect(self.window, (255, 255, 255), self.info_rect)
+        self.menu.show()
         pg.draw.rect(self.window, (255, 0, 255), self.game_rect)
         pg.draw.rect(self.window, (0, 255, 255), self.board_rect)
 
@@ -212,6 +218,9 @@ class Board:
                 if field == self.fields[row][column]:
                     return row, column
         return None
+
+    def get_menu(self):
+        return self.menu
 
     def find_field_beside(self, field, direction):
         if direction in constants.DIRECTIONS:

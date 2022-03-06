@@ -84,9 +84,14 @@ class Game:
                                 modifiable_field.set_value(value)
 
                             # after move
-                            print("correctness: " + str(self.game_board.check_and_set_correct()))
+                            #print("correctness: " + str(self.game_board.check_and_set_correct()))
                             if self.game_board.is_board_full():
-                                print(self.game_board.check_and_set_correct())
+                                #print(self.game_board.check_and_set_correct())
+                                menu = self.game_board.get_menu()
+                                if self.game_board.check_and_set_correct():
+                                    menu.set_key("valid")
+                                else:
+                                    menu.set_key("invalid")
 
                 if event.type == pg.MOUSEBUTTONDOWN:
                     click = True
