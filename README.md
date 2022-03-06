@@ -3,8 +3,6 @@ CONTENTS OF THIS FILE
 
  * Introduction
  * Requirements
- * Installation
- * Configuration
  * Maintainers
 
 
@@ -18,14 +16,6 @@ REQUIREMENTS
 ------------
 
 Pygame
-
-
-INSTALLATION
-------------
-
-
-CONFIGURATION
--------------
 
 
 MAINTAINERS
