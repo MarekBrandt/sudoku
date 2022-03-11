@@ -15,7 +15,7 @@ class Board:
 
         # initialize board from file
         # method sets board_values
-        self.read_field_values_from_file("boards/board2.txt")
+        self.read_fields_from_file("boards/board2 — kopia.txt")
 
         self.board_correct = True
         # checks validity of board and sets board_correct parameters
@@ -44,7 +44,7 @@ class Board:
 
         self.create_and_set_rectangles_for_fields()
 
-    def show(self, active_field, modifiable_field):
+    def show(self, active_field=None, modifiable_field=None):
         self.menu.show()
         pg.draw.rect(self.window, (255, 0, 255), self.game_rect)
         pg.draw.rect(self.window, (0, 255, 255), self.board_rect)
@@ -122,7 +122,7 @@ class Board:
     def get_board_rect(self):
         return self.board_rect
 
-    def read_field_values_from_file(self, file_path):
+    def read_fields_from_file(self, file_path):
         self.fields = []
         file = open(file_path, "r")
         for row in range(self.size):
@@ -155,10 +155,8 @@ class Board:
                     continue
                 # repetition of value
                 if value in row_values:
-                    print("Rule 1 false")
                     return False
                 row_values.append(value)
-        print("Rule 1 true")
         return True
 
     # Rule 2 - Each column must contain the numbers from 1 to 9, without repetitions
@@ -172,10 +170,8 @@ class Board:
                     continue
                 # repetition of value
                 if value in column_values:
-                    print("Rule 2 false")
                     return False
                 column_values.append(value)
-        print("Rule 2 true")
         return True
 
     # Rule 3 - The digits can only occur once per block (nonet)
@@ -196,10 +192,8 @@ class Board:
                         if not value:
                             continue
                         if value in block_values:
-                            print("Rule 3 false")
                             return False
                         block_values.append(value)
-        print("Rule 3 true")
         return True
 
     def get_board_correct(self):
@@ -242,7 +236,8 @@ class Board:
                 if column != self.size - 1:
                     field = self.fields[row][column + 1]
             return field
-
         else:
             print("direction have to be a value from constants.DIRECTION")
             return 1
+
+
