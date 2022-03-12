@@ -12,10 +12,12 @@ class Board:
         self.block_size = 3
 
         self.fields = []
+        # 0 means not solved, >0 unsolvable, <0 solved
+        self.state = 0
 
         # initialize board from file
         # method sets board_values
-        self.read_fields_from_file("boards/board2 — kopia.txt")
+        self.read_fields_from_file("boards/board5.txt")
 
         self.board_correct = True
         # checks validity of board and sets board_correct parameters
@@ -239,5 +241,12 @@ class Board:
         else:
             print("direction have to be a value from constants.DIRECTION")
             return 1
+
+    # 0 means not solved, >0 unsolvable, <0 solved
+    def get_state(self):
+        return self.state
+
+    def set_state(self, state):
+        self.state = state
 
 

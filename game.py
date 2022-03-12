@@ -1,5 +1,5 @@
 import sys
-
+import threading
 from board import Board
 import pygame as pg
 import constants
@@ -96,49 +96,7 @@ class Game:
 
             self.clock.tick(self.fps)
 
-    def solve2(self, row, column):
-        run = True
-        result = 1
-        while run:
-            self.game_board.show()
-
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit()
-
-            if result == 1:
-                # next field
-                # last column, go to next row
-                if column == self.game_board.size - 1:
-                    new_row = row + 1
-                    new_column = 0
-                # choose next column
-                else:
-                    new_row = row
-                    new_column = column + 1
-
-                if self.fields[row][column].get_is_original():
-                    self.solve(new_row, new_column)
-
-                for value in range(1, 10):
-                    self.fields[row][column].set_value(value)
-                    correct = self.game_board.check_and_set_correct()
-                    if correct:
-                        if self.game_board.is_board_full():
-                            print("git")
-                            return 0
-                        else:
-                            result = self.solve(new_row, new_column)
-            return result
-
-            # self.clock.tick(self.fps)
-
-    def solve(self):
-        run = True
-        solved = False
-        correct = None
-
+    def brute_force(self):
         # fields that have to be solved
         fields_to_solve = []
         for fields_row in self.fields:
@@ -146,42 +104,53 @@ class Game:
                 if not field.get_is_original():
                     fields_to_solve.append(field)
 
+        correct = None
         index = 0
+        solved = False
+        while not solved:
+            # check if all fields already filled up
+            if index == len(fields_to_solve):
+                if self.game_board.check_and_set_correct():
+                    solved = True
+                    print("solved")
+                    continue
+            # puzzle is unsolvable
+            elif index == -1:
+                print("unsolvable")
+                break
+
+            field = fields_to_solve[index]
+            # initiating field for changes, set incremented value
+            value = field.get_value()
+            field.set_value(value + 1)
+
+            for value in range(field.get_value(), 10):
+                field.set_value(value)
+                # if correct go to next field
+                correct = self.game_board.check_and_set_correct()
+                if correct:
+                    index += 1
+                    break
+                # incorrect do nothing
+            # if there is no solution
+            if not correct:
+                # erase changes
+                field.set_value(0)
+                index -= 1
+
+    def solve(self):
+        run = True
+
+        brute = threading.Thread(target=self.brute_force, args=())
+        brute.start()
+
         while run:
-            # not solvable
-            if index < 0:
-                return 1
             self.game_board.show()
-            if solved:
-                # self.clock.tick(self.fps)
-                return 0
-            else:
-                # check if all fields already filled up
-                if index == len(fields_to_solve):
-                    if self.game_board.check_and_set_correct():
-                        solved = True
-                        continue
-
-                field = fields_to_solve[index]
-                # initiating field for changes, set incremented value
-                value = field.get_value()
-                field.set_value(value+1)
-
-                for value in range(field.get_value(), 10):
-                    field.set_value(value)
-                    # if correct go to next field
-                    correct = self.game_board.check_and_set_correct()
-                    if correct:
-                        index += 1
-                        break
-                    # incorrect do nothing
-                # if there is no solution
-                if not correct:
-                    # erase changes
-                    field.set_value(0)
-                    index -= 1
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
                     sys.exit()
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_ESCAPE:
+                        run = False
