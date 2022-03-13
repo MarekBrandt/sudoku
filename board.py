@@ -1,3 +1,6 @@
+import os.path
+import random
+
 import pygame as pg
 import constants
 from field import Field
@@ -17,7 +20,10 @@ class Board:
 
         # initialize board from file
         # method sets board_values
-        self.read_fields_from_file("boards/board5.txt")
+        path = os.path.dirname(__file__) + "//boards"
+        file_name = random.choice([x for x in os.listdir(path) if os.path.isfile(os.path.join(path, x))])
+        print(path)
+        self.read_fields_from_file("boards/" + file_name)
 
         self.board_correct = True
         # checks validity of board and sets board_correct parameters
