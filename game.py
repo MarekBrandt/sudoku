@@ -7,8 +7,8 @@ import constants
 
 # represents all actions made in game
 class Game:
-    def __init__(self):
-        self.window = pg.display.set_mode((constants.window_width, constants.window_height))
+    def __init__(self, window):
+        self.window = window
         self.clock = pg.time.Clock()
 
         pg.display.set_caption("Sudoku")
@@ -54,8 +54,7 @@ class Game:
                 if event.type == pg.KEYDOWN:
 
                     if event.key == pg.K_ESCAPE:
-                        pg.quit()
-                        sys.exit()
+                        return 0
 
                     # if there is active field
                     if active_field is not None:
@@ -149,8 +148,7 @@ class Game:
 
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit()
+                    return 0
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_ESCAPE:
                         run = False

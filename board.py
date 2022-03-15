@@ -20,9 +20,9 @@ class Board:
 
         # initialize board from file
         # method sets board_values
-        path = os.path.dirname(__file__) + "//boards"
+        path = os.path.dirname(__file__) + "\\boards"
         file_name = random.choice([x for x in os.listdir(path) if os.path.isfile(os.path.join(path, x))])
-        print(path)
+        print(path + "\\" + file_name)
         self.read_fields_from_file("boards/" + file_name)
 
         self.board_correct = True
@@ -54,8 +54,8 @@ class Board:
 
     def show(self, active_field=None, modifiable_field=None):
         self.menu.show()
-        pg.draw.rect(self.window, (255, 0, 255), self.game_rect)
-        pg.draw.rect(self.window, (0, 255, 255), self.board_rect)
+        pg.draw.rect(self.window, constants.COLORS['game_sec'], self.game_rect)
+        pg.draw.rect(self.window, constants.COLORS['border'], self.board_rect)
 
         font = pg.font.Font(None, 50)
         font_color = (0, 0, 0)
@@ -67,7 +67,7 @@ class Board:
                 elif modifiable_field == field:
                     color = (135, 206, 250)
                 else:
-                    color = (192, 222, 60)
+                    color = constants.COLORS['field']
                 pg.draw.rect(self.window, color, field)
                 text = str(field.get_value())
                 if text == "0":
